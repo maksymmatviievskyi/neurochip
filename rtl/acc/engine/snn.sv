@@ -113,7 +113,7 @@ module snn (
         end
      end
 
-    logic signed [I_W-1:0] I [0:MAX_NEURONS-1];
+    logic [MAX_NEURONS*I_W-1:0] I_flat;
 
     // ---------------------- Instantiantion ----------------------
     config_mem layer_config (
@@ -178,7 +178,7 @@ module snn (
         .syn_ready(syn_done),
         .layer_range_start(layer_neuron_start),
         .layer_range_spread(layer_neuron_count),
-        .I(I),
+        .I_flat(I_flat),
         .decay_shift(layer_decay),
         .threshold($signed(layer_threshold)),
         .reset_value($signed(layer_reset)),
@@ -200,7 +200,7 @@ module snn (
         .layer_range_raddr(),
         .conn_meta_raddr(neuron_meta_raddr),
         .conn_raddr(conn_raddr),
-        .I(I),
+        .I_flat(I_flat),
         .done(syn_done)
     );
 

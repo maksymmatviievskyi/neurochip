@@ -6,7 +6,7 @@ module lif_eng (
     input logic                         syn_ready,
     input logic [NEURON_ADDR_W-1:0] layer_range_start,
     input logic [NEURON_ADDR_W:0] layer_range_spread,
-    input logic signed [I_W-1:0]     I [0:MAX_NEURONS-1],
+    input logic [MAX_NEURONS*I_W-1:0] I_flat,
     input logic [LEAK_SHIFT_W-1:0]           decay_shift, 
     input logic signed [THRESHOLD_W-1:0] threshold, 
     input logic signed [THRESHOLD_W-1:0] reset_value,
@@ -16,6 +16,11 @@ module lif_eng (
 localparam int V_W = I_W + (2**LEAK_SHIFT_W - 1) + 1; // Extra safeguard bit added
 
 logic signed [V_W:0] V [0:MAX_NEURONS-1];
+logic signed [I_W-1:0] I [0:MAX_NEURONS-1];
+
+always_comb begin
+    for (int n = 0; n < MAX_NEURONS; n++) I[n] = I_flat[n*I_W +: I_W];
+end
 
 always_ff @(posedge clk) begin
     if (reset) begin

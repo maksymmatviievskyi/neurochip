@@ -10,10 +10,12 @@ module config_mem (
     input logic [snn_pkg::THRESHOLD_W-1:0]  wthreshold,
     input logic [snn_pkg::LEAK_SHIFT_W-1:0] wdecay,
     input logic [snn_pkg::THRESHOLD_W-1:0]  wreset,
+    input logic [snn_pkg::LAYER_ADDR_W:0] wnum_layers, // Min 2
 
     output logic [snn_pkg::THRESHOLD_W-1:0]  rthreshold,
     output logic [snn_pkg::LEAK_SHIFT_W-1:0] rdecay,
-    output logic [snn_pkg::THRESHOLD_W-1:0]  rreset
+    output logic [snn_pkg::THRESHOLD_W-1:0]  rreset,
+    output logic [snn_pkg::LAYER_ADDR_W:0] num_layers
 );
 
     logic [snn_pkg::THRESHOLD_W-1:0]  threshold_mem [0:snn_pkg::MAX_LAYERS-1];
@@ -25,6 +27,7 @@ module config_mem (
             threshold_mem[waddr] <= wthreshold;
             decay_mem[waddr]     <= wdecay;
             reset_mem[waddr]     <= wreset;
+            num_layers           <= wnum_layers;
         end
 
         rthreshold <= threshold_mem[raddr];

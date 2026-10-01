@@ -20,13 +20,19 @@ module syn_eng(
     output logic [NEURON_ADDR_W-1:0] conn_meta_raddr,
     output logic [CONN_ADDR_W-1:0] conn_raddr,
 
-    output logic signed [I_W-1:0] I [0:MAX_NEURONS-1],
+    output logic [MAX_NEURONS*I_W-1:0] I_flat,
 
     output logic done
 );
 // FSM, 3 Operational Cycles
 typedef enum logic [1:0] { IDLE, SCAN, FETCH, CALC } state_t;
 state_t state;
+
+logic signed [I_W-1:0] I [0:MAX_NEURONS-1];
+
+always_comb begin
+    for (int n = 0; n < MAX_NEURONS; n++) I_flat[n*I_W +: I_W] = I[n];
+end
 
 logic [NEURON_ADDR_W:0] idx; // Extra bit wiggle room for tracking finished state
 logic [CONN_ADDR_W:0] counter;
