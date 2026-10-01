@@ -25,8 +25,8 @@ module syn_eng(
     output logic done
 );
 // FSM, 3 Operational Cycles
-typedef enum logic [1:0] { IDLE, SCAN, FETCH, CALC } status_t;
-status_t state;
+typedef enum logic [1:0] { IDLE, SCAN, FETCH, CALC } state_t;
+state_t state;
 
 logic [NEURON_ADDR_W:0] idx; // Extra bit wiggle room for tracking finished state
 logic [CONN_ADDR_W:0] counter;
@@ -36,7 +36,7 @@ assign conn_raddr = (state == FETCH) ? conn_meta_rstart : caddr; // Optimises re
 
 always_ff @(posedge clk) begin
      if(reset) begin 
-        idx <= '0;
+        idx <= layer_range_rstart;
         counter <= '0;
         done <= '0;
         state <= IDLE;
@@ -46,12 +46,12 @@ always_ff @(posedge clk) begin
         case (state)
             IDLE: begin
                 if(init) begin 
-                    idx <= 0;
+                    idx <= layer_range_rstart;
                     state <= SCAN;
                     for (int n = 0; n < MAX_NEURONS; n++) I[n] <= '0; // I only holds this pass's currents
                 end
             end SCAN : begin
-                if(idx == MAX_NEURONS) begin 
+                if(idx == layer_range_rstart+layer_range_rcount) begin 
                     done <= 1;
                     state <= IDLE;
                 end else if(spikes[idx]) state <= FETCH;
