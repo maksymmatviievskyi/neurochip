@@ -4,7 +4,7 @@ module meta_mem #(
     parameter  int DEPTH   = MAX_LAYERS,
     parameter  int START_W = CONN_ADDR_W,
     parameter  int COUNT_W = CONN_ADDR_W + 1,
-    localparam int ADDR_W  = (DEPTH <= 1) ? 1 : $clog2(DEPTH)
+    parameter int ADDR_W  = (DEPTH <= 1) ? 1 : $clog2(DEPTH)
 ) (
     input logic clk,
     input logic wen,
