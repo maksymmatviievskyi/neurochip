@@ -119,6 +119,8 @@ module snn_tb;
         reset = 1;
         repeat (2) @(negedge clk);
         reset = 0;
+        wait (dut.lif_cleared);   // LIF V memory is swept to 0 after reset; snn ignores init until then
+        @(negedge clk);
         for (int n = 0; n < MAX_NEURONS; n++) mV[n] = 0;
     endtask
 
@@ -225,7 +227,7 @@ module snn_tb;
         end
         for (int l = 1; l < n_layers; l++) begin
             for (int n = rng_start[l]; n < rng_start[l] + rng_count[l]; n++) begin
-                v_dut = longint'($signed(dut.lif.V[n]));
+                v_dut = longint'($signed(dut.lif.VRAM[n]));
                 if (v_dut !== mV[n]) begin
                     bad++;
                     if (bad <= 6) $display("  FAIL %s: V[%0d] = %0d, expected %0d", name, n, v_dut, mV[n]);

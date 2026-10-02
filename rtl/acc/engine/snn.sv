@@ -55,6 +55,9 @@ module snn (
     logic syn_done;
     logic syn_init; 
 
+    logic lif_done;
+    logic lif_cleared;
+
     logic [THRESHOLD_W-1:0] layer_threshold;
     logic [LEAK_SHIFT_W-1:0] layer_decay;
     logic [THRESHOLD_W-1:0] layer_reset;
@@ -79,7 +82,7 @@ module snn (
             syn_init <= 1'b0;
             case (state)
                 IDLE: begin
-                    if (init) begin
+                    if (init && lif_cleared) begin // V memory must finish clearing first
                         src_start <= layer_neuron_start;
                         src_count <= layer_neuron_count;
                         lcounter <= 1;
@@ -92,18 +95,20 @@ module snn (
                     if (syn_done) state <= LIF;
                 end
                 LIF: begin
-                    if (lcounter == num_layers - 1) begin
-                        snn_done <= 1'b1;
-                        spikesOut <= spikesLIF;
-                        lcounter <= '0;
-                        state <= IDLE;
-                    end else begin
-                        src_start <= layer_neuron_start;
-                        src_count <= layer_neuron_count;
-                        spikesTemp <= spikesLIF;
-                        lcounter <= lcounter + 1;
-                        syn_init <= 1'b1;
-                        state <= SYN;
+                    if (lif_done) begin
+                        if (lcounter == num_layers - 1) begin
+                            snn_done <= 1'b1;
+                            spikesOut <= spikesLIF;
+                            lcounter <= '0;
+                            state <= IDLE;
+                        end else begin
+                            src_start <= layer_neuron_start;
+                            src_count <= layer_neuron_count;
+                            spikesTemp <= spikesLIF;
+                            lcounter <= lcounter + 1;
+                            syn_init <= 1'b1;
+                            state <= SYN;
+                        end
                     end
                 end
                 default: begin
@@ -182,6 +187,8 @@ module snn (
         .decay_shift(layer_decay),
         .threshold($signed(layer_threshold)),
         .reset_value($signed(layer_reset)),
+        .done(lif_done),
+        .cleared(lif_cleared),
         .spikes(spikesLIF)
     );
 

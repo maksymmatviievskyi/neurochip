@@ -36,7 +36,7 @@ end
 
 logic [NEURON_ADDR_W:0] idx; // Extra bit wiggle room for tracking finished state
 logic [CONN_ADDR_W:0] counter;
-logic [CONN_ADDR_W-1:0] caddr; 
+logic [CONN_ADDR_W-1:0] caddr;
 assign conn_meta_raddr = idx;
 assign conn_raddr = (state == FETCH) ? conn_meta_rstart : caddr; // Optimises readout to 1 cycle
 
