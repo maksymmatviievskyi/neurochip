@@ -1,5 +1,19 @@
+# OS / editor
+.DS_Store
+.vscode/
+
+# Quartus
 db/
 incremental_db/
 output_files/
 *.qws
 *.bak
+
+# Simulation
+*.vvp
+*.vcd
+
+# Python
+__pycache__/
+*.npz
+snn/recordings/
