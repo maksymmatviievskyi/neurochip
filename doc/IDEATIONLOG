@@ -1,0 +1,22 @@
+23/09/2026 
+Gating clock signal could bring large power savings from keeping transistors from switching,
+but DE10-Lite interface doesn't provide a way to efficienly control it without routing it 
+through general interconnect buses.
+
+Possible performance increase with pipelined synaptic engine that synthesises individual circuits
+for each layer
+
+24/09/26
+Wanted to define the synaptic engine as taking spike vector as [MAX_NEURONS-1:0] input, but that would 
+mean that all MAX_NEURONS lanes would need to access M9K memory, that can only has dual read port at most.
+Could copy the memory to all lanes, but it wouldn't be resource efficient on such a tiny FPGA board.
+Decided to then instead proceed with priority encoding, which selects one bit at a time and routes its address.
+
+27/09/26
+Created a spike buffer to store peripheral spikes that mimics FIFO Queue.
+
+1/10/26
+Feasible pipelining at lif_eng operational stage to process l-1 and l layers simultaneously in the loop when 
+updating range of membrane potential.
+
+LIF Engine synthesis used up >100% of the FPGA LE, hence turned sequential with a tiny delay added.
