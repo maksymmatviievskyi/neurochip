@@ -47,8 +47,8 @@ Status legend: `[x]` done · `[~]` in progress · `[ ]` to do · `[-]` dropped
 
 - [~] Bit-exact integer LIF model (`snn/snn_int.py`) — still to cross-check against `snn_tb` networks A/B
 - [x] Surrogate-gradient training (`snn/train.py`, PyTorch, 36 → 64 → 5), quantise to int16, integer-model check — synthetic data: 98 % float / 98 % integer
-- [ ] Exporter: `weights.hex` (config, layer ranges, neuron meta, connections) + `expected.txt` for test set
-- [ ] Cross-check: Python integer model vs `snn_tb` on exported network
+- [x] Exporter (`snn/export.py`): network + stimuli + expected output counts for the RTL
+- [x] Cross-check (`hw/tb/acc/snn_infer_tb.sv`): trained network on the RTL, 40/40 recorded examples bit-exact with the integer model, 343 cycles/timestep (6.9 µs at 50 MHz)
 
 ## Phase 4 — On-board classification
 
@@ -88,7 +88,7 @@ Status legend: `[x]` done · `[~]` in progress · `[ ]` to do · `[-]` dropped
 | SNN core, serial LIF (Quartus) | **6,713 LE (13 %)**, 3,643 regs, 100,992 memory bits | 2 Oct 2026, core only, virtual pins |
 | Cycles / timestep, test network A | 40 (parallel) → 80 → 66 → 63 → **60** | serialise, then pipeline, then remove bubbles |
 | Fmax @ Slow 85C | _tbd_ | target ≥ 50 MHz |
-| Classification accuracy | 98 % (synthetic only) | 36→64→5, k=6, scale 8192; real data tbd |
+| Classification accuracy | 73–87 % cross-session (2 sessions recorded) | 36→64→5, k=6, scale 16384; more sessions needed |
 | Synaptic ops/s idle vs active | _tbd_ | synthetic: ~10k ops/window vs 672k MACs dense ANN (~66×) |
 
 ## Hardware
@@ -107,6 +107,8 @@ Status legend: `[x]` done · `[~]` in progress · `[ ]` to do · `[-]` dropped
 - **24 Sep** — Synaptic engine processes one spike at a time (M9K has ≤ 2 ports).
 
 ## Progress log
+
+- **5 Oct** — Recorder built and used: 2 sessions × 5 classes × 16 windows. Cross-session accuracy 73–87 %. Trained network runs bit-exact on the RTL in simulation (40/40), 6.9 µs per timestep.
 
 - **4 Oct** — Repository reorganised: hardware under `hw/` (rtl, tb, syn), model and training under `snn/`, docs under `doc/`.
 

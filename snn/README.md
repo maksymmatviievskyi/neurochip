@@ -29,3 +29,6 @@ python train.py --data recordings.npz             # validates on the last record
 ```
 
 `train.py` writes `weights_int.npz` (integer weights, threshold, reset, k, scale, encoder steps).
+
+
+idle, light_tap, hard_tap, double_tap, shake are the classes
