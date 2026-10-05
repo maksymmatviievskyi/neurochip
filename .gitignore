@@ -5,7 +5,7 @@
 # Quartus
 db/
 incremental_db/
-# output_files/
+output_files/
 *.qws
 *.bak
 
@@ -16,4 +16,8 @@ incremental_db/
 # Python
 __pycache__/
 *.npz
-# snn/recordings/
+
+
+# Generated testbench data (snn/export.py)
+hw/tb/acc/data/
+hw/tb/live/data/

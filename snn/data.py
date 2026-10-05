@@ -13,7 +13,12 @@ import numpy as np
 
 FS = 400                      # sample rate [Hz] -> one SNN timestep per sample (2.5 ms)
 T = 256                       # window length in timesteps (640 ms)
-STEPS = (6, 12, 24, 48, 96, 192)   # encoder step sizes [LSB]; smallest ~4x still-board noise
+STEPS = (10, 25, 60, 150, 400, 1000)   # from recordings: idle noise ~2 LSB; hard taps/shakes reach ~1000+ LSB per sample
+
+# Live trigger (identical in hw/rtl/live/snn_live.sv): a one-step delta encoder with TRIG_STEP runs on the
+# raw stream; the first spike on any axis at sample i (with i >= next_allowed) starts a window at i - PRE.
+TRIG_STEP = 25
+PRE = 100
 CLASSES = ("idle", "light_tap", "hard_tap", "double_tap", "shake")
 N_AXES = 3
 N_IN = N_AXES * len(STEPS) * 2    # 36
@@ -109,6 +114,26 @@ def make_synthetic(n_per_class, seed, noise_lsb=1.5):
     raw = np.clip(np.stack(raws), -512, 511).astype(np.int16)      # 10-bit-ish range at +-2 g
     labels = np.array(labels)
     return raw, labels, np.full(len(labels), seed)
+
+
+def hw_windows(raw):
+    """
+    Window start indices the board's trigger produces for one continuous recording raw: (n, 3).
+    Mirrors snn_live.sv: trigger encoder initialised on sample 0; a trigger at sample i (i >= PRE and
+    i >= next_allowed) gives a window [i - PRE, i - PRE + T); the next trigger is accepted from the
+    end of that window. Windows that would run past the end of the recording are dropped.
+    """
+    trig = encode(raw[None], steps=(TRIG_STEP,))[0].any(axis=1)
+    starts, next_allowed = [], 0
+    for i in np.flatnonzero(trig):
+        if i < PRE or i < next_allowed:
+            continue
+        s = i - PRE
+        if s + T > len(raw):
+            break
+        starts.append(int(s))
+        next_allowed = s + T
+    return starts
 
 
 def load_recordings(path):

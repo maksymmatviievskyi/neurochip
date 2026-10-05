@@ -83,6 +83,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default=None)
     ap.add_argument("--val-session", type=int, default=None)
+    ap.add_argument("--all", action="store_true", help="train on every session (final model for the board); "
+                    "the reported accuracy is then on training data")
     ap.add_argument("--k", type=int, default=6)              # decay shift
     ap.add_argument("--reset", type=float, default=0.0)      # reset value, in units of threshold
     ap.add_argument("--slope", type=float, default=5.0)      # surrogate slope (threshold = 1)
@@ -101,6 +103,8 @@ def main():
         raw, y, sess = data.load_recordings(args.data)
         vs = args.val_session if args.val_session is not None else sess.max()
         tr, va = sess != vs, sess == vs
+        if args.all:
+            tr = va = np.ones(len(y), bool)
         raw_tr, y_tr, raw_va, y_va = raw[tr], y[tr], raw[va], y[va]
     else:
         raw_tr, y_tr, _ = data.make_synthetic(160, seed=1)

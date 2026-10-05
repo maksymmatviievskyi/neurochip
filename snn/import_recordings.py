@@ -24,6 +24,8 @@ WORDS, WIN = 16384, 1024
 def read_mif(path):
     words = np.zeros(WORDS, dtype=np.int64)
     width, in_content = 48, False
+    radix = {"BIN": 2, "OCT": 8, "DEC": 10, "UNS": 10, "HEX": 16}
+    arad, drad = 16, 16
     with open(path) as f:
         for line in f:
             line = line.split("--")[0].strip()
@@ -32,6 +34,13 @@ def read_mif(path):
             m = re.match(r"WIDTH\s*=\s*(\d+)", line, re.I)
             if m:
                 width = int(m.group(1))
+            m = re.match(r"(ADDRESS|DATA)_RADIX\s*=\s*(\w+)", line, re.I)
+            if m:
+                r = radix[m.group(2).upper()]
+                if m.group(1).upper() == "ADDRESS":
+                    arad = r
+                else:
+                    drad = r
             if re.match(r"CONTENT\s+BEGIN", line, re.I):
                 in_content = True
                 continue
@@ -40,9 +49,9 @@ def read_mif(path):
             m = re.match(r"\[?\s*([0-9A-Fa-f]+)\s*(?:\.\.\s*([0-9A-Fa-f]+)\s*\])?\s*:\s*([0-9A-Fa-f\s]+);", line)
             if not m:
                 continue
-            a0 = int(m.group(1), 16)
-            a1 = int(m.group(2), 16) if m.group(2) else a0
-            vals = [int(v, 16) for v in m.group(3).split()]
+            a0 = int(m.group(1), arad)
+            a1 = int(m.group(2), arad) if m.group(2) else a0
+            vals = [int(v, drad) for v in m.group(3).split()]
             if len(vals) == 1:
                 words[a0:a1 + 1] = vals[0]
             else:                                   # "addr : v0 v1 v2 ..." form
@@ -59,27 +68,27 @@ def unpack(words):
 
 
 def crop(win, label, rng, n_crops, T=data.T):
-    """Cut T-sample windows out of a 1024-sample recording, centred on the gesture."""
-    w = win.astype(float)
-    base = np.stack([np.convolve(w[:, a], np.ones(65) / 65, mode="same") for a in range(3)], axis=1)
-    act = np.abs(w - base).sum(axis=1)                      # deviation from local mean (removes gravity)
-    act = np.convolve(act, np.ones(8) / 8, mode="same")[32:-32]
-    off = 32
+    """
+    Cut T-sample examples out of a 1024-sample recording exactly where the board's trigger would
+    (data.hw_windows), so training sees the same window placement as the live hardware.
+    Extra crops (n_crops > 1) are the same windows shifted by a few samples, for robustness.
+    Idle recordings also get random crops, since the trigger rarely fires when nothing happens.
+    """
     out = []
-    if label == 0:                                   # idle: random crops
-        for _ in range(n_crops):
-            s = rng.integers(0, len(win) - T)
+    starts = data.hw_windows(win)
+    if label != 0:
+        # a tap is one event: later triggers in the same recording are its tail / handling noise.
+        # a shake is long and legitimately triggers several windows.
+        starts = starts[:3 if data.CLASSES[label] == "shake" else 1]
+    for s0 in starts:
+        for c in range(n_crops):
+            s = s0 if c == 0 else s0 + int(rng.integers(-8, 9))
+            s = int(np.clip(s, 0, len(win) - T))
             out.append(win[s:s + T])
-        return out
-    thr = max(np.median(act) * 4, 4.0)
-    idx = np.flatnonzero(act > thr) + off
-    if len(idx) == 0:
-        return out                                   # nothing happened: skip (you missed the window)
-    first, last = idx[0], idx[-1]
-    centre = (first + last) // 2 if last - first < T - 40 else first + T // 2 - 20
-    for _ in range(n_crops):                         # small random shifts = augmentation
-        s = int(np.clip(centre - T // 2 + rng.integers(-30, 31), 0, len(win) - T))
-        out.append(win[s:s + T])
+    if label == 0:
+        for _ in range(n_crops):
+            s = int(rng.integers(0, len(win) - T))
+            out.append(win[s:s + T])
     return out
 
 
