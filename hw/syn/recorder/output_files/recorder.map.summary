@@ -1,0 +1,16 @@
+Analysis & Synthesis Status : Successful - Mon Oct 05 09:15:34 2026
+Quartus Prime Version : 20.1.1 Build 720 11/11/2020 SJ Lite Edition
+Revision Name : recorder
+Top-level Entity Name : de10_recorder_top
+Family : MAX 10
+Total logic elements : 821
+    Total combinational functions : 772
+    Dedicated logic registers : 450
+Total registers : 450
+Total pins : 44
+Total virtual pins : 0
+Total memory bits : 786,432
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0
+UFM blocks : 0
+ADC blocks : 0

@@ -1,0 +1,18 @@
+Fitter Status : Successful - Mon Oct 05 09:15:44 2026
+Quartus Prime Version : 20.1.1 Build 720 11/11/2020 SJ Lite Edition
+Revision Name : recorder
+Top-level Entity Name : de10_recorder_top
+Family : MAX 10
+Device : 10M50DAF484C7G
+Timing Models : Final
+Total logic elements : 808 / 49,760 ( 2 % )
+    Total combinational functions : 773 / 49,760 ( 2 % )
+    Dedicated logic registers : 450 / 49,760 ( < 1 % )
+Total registers : 450
+Total pins : 44 / 360 ( 12 % )
+Total virtual pins : 0
+Total memory bits : 786,432 / 1,677,312 ( 47 % )
+Embedded Multiplier 9-bit elements : 0 / 288 ( 0 % )
+Total PLLs : 0 / 4 ( 0 % )
+UFM blocks : 0 / 1 ( 0 % )
+ADC blocks : 0 / 2 ( 0 % )

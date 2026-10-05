@@ -1,0 +1,1 @@
+Info (10281): Verilog HDL Declaration information at adxl345_ctrl.sv(19): object "CFG" differs only in case from object "cfg" in the same scope File: C:/Users/mm3624/Documents/neurochip/hw/rtl/rec/adxl345_ctrl.sv Line: 19

@@ -5,7 +5,7 @@
 # Quartus
 db/
 incremental_db/
-output_files/
+# output_files/
 *.qws
 *.bak
 
@@ -16,4 +16,4 @@ output_files/
 # Python
 __pycache__/
 *.npz
-snn/recordings/
+# snn/recordings/
