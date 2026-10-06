@@ -6,7 +6,7 @@ package snn_pkg;
     parameter int SPIKE_BUF_DEPTH    = 1024;
 
     parameter int WEIGHT_W = 16;
-    parameter int THRESHOLD_W  = 8;
+    parameter int THRESHOLD_W  = 16;
     parameter int LEAK_SHIFT_W  = 4; 
 
     localparam int CONN_ADDR_W =
