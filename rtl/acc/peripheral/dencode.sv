@@ -20,7 +20,8 @@ module dencode #(
 logic signed [DATA_W+1:0] d    [DATA_Q][STEP_N];
 logic signed [DATA_W+1:0] mean [DATA_Q][STEP_N];
 
-localparam int STEPS [STEP_N] = '{8, 32, 128, 256, 512, 1024};
+// Flat packed vector, step s = STEPS[16*s +: 16] (rightmost = step 0): portable to Quartus and Icarus
+localparam logic [16*STEP_N-1:0] STEPS = {16'd1024, 16'd512, 16'd256, 16'd128, 16'd32, 16'd8};
 
 // Delta Calculations
 always_comb begin
@@ -44,13 +45,15 @@ always_ff @(posedge clk) begin
                     spikes <= 0;
                 end else begin
                     logic up, down;
-                    up   = (d[a][s] >=  STEPS[s]);
-                    down = (d[a][s] <= -STEPS[s]);
+                    int   st;                       // signed copy of the unsigned step
+                    st   = STEPS[16*s +: 16];
+                    up   = (d[a][s] >=  st);
+                    down = (d[a][s] <= -st);
                     
                     if(up) begin 
-                        mean[a][s] <= mean[a][s] + STEPS[s];
+                        mean[a][s] <= mean[a][s] + st;
                     end else if(down) begin 
-                        mean[a][s] <= mean[a][s] - STEPS[s];
+                        mean[a][s] <= mean[a][s] - st;
                     end
                     spikes[2*(a*STEP_N+s) +: 2] <= {down, up}; // Assigns 2 spikes per channel
                 end
