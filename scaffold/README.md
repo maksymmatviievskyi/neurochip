@@ -12,6 +12,7 @@ depends on it. It lives on the `scaffold` branch only — `main` never contains 
 | `rtl/de10_top.sv` | board top: master -> spike_record -> snn -> readout -> HEX, LEDs, reset |
 | `syn/` | Quartus project `de10.qpf` (pins, timing, `snn_rom.hex` = trained weights) |
 | `tb/` | fake ADXL345 + system testbench, bit-exact against the Python model (`sh run.sh ...`) |
+| `tb/power/` | pins-only testbench + ModelSim script for gate-level power (VCD for the Power Analyzer), see `power.do` |
 | `snn/` | training (`train_live.py`), test vectors, CNN baseline, recordings |
 
 ## Compile (Windows / Quartus)
