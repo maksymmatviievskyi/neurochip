@@ -1,6 +1,13 @@
 import snn_pkg::*;
 
-module snn (
+module snn #(
+    // $readmemh files with the trained network (empty = memories start uninitialised)
+    parameter        CONN_FILE        = "",
+    parameter        NEURON_META_FILE = "",
+    parameter        LAYER_META_FILE  = "",
+    parameter        CONFIG_FILE      = "",
+    parameter int    NUM_LAYERS_INIT  = 2
+) (
     input logic clk,
     input logic reset,
     input logic init,
@@ -29,6 +36,7 @@ module snn (
     input logic [CONN_W-1:0] conn_wdata,
     output logic [MAX_NEURONS-1:0] spikesOut,
     output logic snn_done,
+    output logic ready,          // HIGH when an init pulse will be accepted (idle and V cleared)
     output logic [LAYER_ADDR_W:0] num_layers
 );
     // ---------------------- Definitions ----------------------
@@ -66,6 +74,7 @@ module snn (
     logic [NEURON_ADDR_W-1:0] src_start;
     logic [NEURON_ADDR_W:0] src_count;
     assign layer_meta_raddr = lcounter;
+    assign ready = (state == IDLE) && lif_cleared;
 
      // ----------------------    Logic   ----------------------
 
@@ -121,7 +130,10 @@ module snn (
     logic [MAX_NEURONS*I_W-1:0] I_flat;
 
     // ---------------------- Instantiantion ----------------------
-    config_mem layer_config (
+    config_mem #(
+        .INIT_FILE(CONFIG_FILE),
+        .NUM_LAYERS_INIT(NUM_LAYERS_INIT)
+    ) layer_config (
         .clk(clk),
         .wen(config_wen),
         .waddr(config_waddr),
@@ -139,7 +151,8 @@ module snn (
     meta_mem #(
         .DEPTH(MAX_NEURONS),
         .START_W(CONN_ADDR_W),
-        .COUNT_W(CONN_ADDR_W + 1)
+        .COUNT_W(CONN_ADDR_W + 1),
+        .INIT_FILE(NEURON_META_FILE)
     ) neuron_conn_meta (
         .clk(clk),
         .wen(neuron_meta_wen),
@@ -154,7 +167,8 @@ module snn (
     meta_mem #(
         .DEPTH(MAX_LAYERS),
         .START_W(NEURON_ADDR_W),
-        .COUNT_W(NEURON_ADDR_W + 1)
+        .COUNT_W(NEURON_ADDR_W + 1),
+        .INIT_FILE(LAYER_META_FILE)
     ) layer_ranges (
         .clk(clk),
         .wen(layer_meta_wen),
@@ -166,7 +180,9 @@ module snn (
         .rcount(layer_neuron_count)
     );
 
-    conn_mem connections (
+    conn_mem #(
+        .INIT_FILE(CONN_FILE)
+    ) connections (
         .clk(clk),
         .wen(conn_wen),
         .raddr(conn_raddr),

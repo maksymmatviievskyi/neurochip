@@ -1,6 +1,8 @@
 import snn_pkg::*;
 
-module conn_mem (
+module conn_mem #(
+    parameter        INIT_FILE = ""  // untyped: Icarus cannot pass a parameter into a string-typed one
+) (
     input  logic clk,
     input  logic wen,
     input  logic [CONN_ADDR_W-1:0] raddr,
@@ -10,21 +12,15 @@ module conn_mem (
     output logic [NEURON_ADDR_W-1:0]   rdest,
     output logic signed [WEIGHT_W-1:0] rweight
 );
+    logic [CONN_W-1:0] mem [0:MAX_CONNECTIONS-1];
 
-    logic [NEURON_ADDR_W-1:0]   source      [0:MAX_CONNECTIONS-1];
-    logic [NEURON_ADDR_W-1:0]   destination [0:MAX_CONNECTIONS-1];
-    logic signed [WEIGHT_W-1:0] weight      [0:MAX_CONNECTIONS-1];
+    initial begin
+        if (INIT_FILE != "") $readmemh(INIT_FILE, mem);
+    end
 
     always_ff @(posedge clk) begin
-        if (wen) begin
-            source[waddr]      <= data[CONN_W-1 -: NEURON_ADDR_W];
-            destination[waddr] <= data[CONN_W-1-NEURON_ADDR_W -: NEURON_ADDR_W];
-            weight[waddr]      <= data[WEIGHT_W-1:0];
-        end
-
-        rsource <= source[raddr];
-        rdest   <= destination[raddr];
-        rweight <= weight[raddr];
+        if (wen) mem[waddr] <= data;
+        {rsource, rdest, rweight} <= mem[raddr];
     end
 
 endmodule

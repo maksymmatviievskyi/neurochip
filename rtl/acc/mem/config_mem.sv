@@ -1,6 +1,9 @@
 import snn_pkg::*;
 
-module config_mem (
+module config_mem #(
+    parameter        INIT_FILE = "", // untyped: Icarus cannot pass a parameter into a string-typed one
+    parameter int    NUM_LAYERS_INIT = 2
+) (
     input logic clk,
     input logic wen,
 
@@ -15,24 +18,18 @@ module config_mem (
     output logic [snn_pkg::THRESHOLD_W-1:0]  rthreshold,
     output logic [snn_pkg::LEAK_SHIFT_W-1:0] rdecay,
     output logic [snn_pkg::THRESHOLD_W-1:0]  rreset,
-    output logic [snn_pkg::LAYER_ADDR_W:0] num_layers
+    output logic [snn_pkg::LAYER_ADDR_W:0] num_layers = (snn_pkg::LAYER_ADDR_W+1)'(NUM_LAYERS_INIT)
 );
+    logic [2*snn_pkg::THRESHOLD_W+snn_pkg::LEAK_SHIFT_W-1:0] mem [0:snn_pkg::MAX_LAYERS-1];
 
-    logic [snn_pkg::THRESHOLD_W-1:0]  threshold_mem [0:snn_pkg::MAX_LAYERS-1];
-    logic [snn_pkg::LEAK_SHIFT_W-1:0] decay_mem     [0:snn_pkg::MAX_LAYERS-1];
-    logic [snn_pkg::THRESHOLD_W-1:0]  reset_mem     [0:snn_pkg::MAX_LAYERS-1];
+    initial if (INIT_FILE != "") $readmemh(INIT_FILE, mem);
 
     always_ff @(posedge clk) begin
         if (wen) begin
-            threshold_mem[waddr] <= wthreshold;
-            decay_mem[waddr]     <= wdecay;
-            reset_mem[waddr]     <= wreset;
-            num_layers           <= wnum_layers;
+            mem[waddr] <= {wthreshold, wdecay, wreset};
+            num_layers <= wnum_layers;
         end
-
-        rthreshold <= threshold_mem[raddr];
-        rdecay     <= decay_mem[raddr];
-        rreset     <= reset_mem[raddr];
+        {rthreshold, rdecay, rreset} <= mem[raddr];
     end
 
 endmodule

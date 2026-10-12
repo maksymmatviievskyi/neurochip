@@ -1,6 +1,6 @@
 // Technical documentation. Max SCLK is 5MHz.
 // Page 14. https://www.analog.com/media/en/technical-documentation/data-sheets/adxl345.pdf
-// Uses MODE 3, CPOL 1, CPHA 1
+// Uses MODE 3 SPI
 
 module spi(
     input logic miso,

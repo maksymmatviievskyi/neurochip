@@ -21,6 +21,7 @@ logic signed [DATA_W+1:0] d    [DATA_Q][STEP_N];
 logic signed [DATA_W+1:0] mean [DATA_Q][STEP_N];
 
 // Flat packed vector, step s = STEPS[16*s +: 16] (rightmost = step 0): portable to Quartus and Icarus
+// Needed to amplitude modulate the change relative to the threshold at each step
 localparam logic [16*STEP_N-1:0] STEPS = {16'd1024, 16'd512, 16'd256, 16'd128, 16'd32, 16'd8};
 
 // Delta Calculations
