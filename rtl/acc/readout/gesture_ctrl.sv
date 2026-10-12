@@ -24,7 +24,7 @@ module gesture_ctrl #(
     output logic snn_rst,
     output logic run,
     output logic count_clear,
-    output logic decide,
+    output logic decide, // mark the sample window as finished
     output logic busy
 );
 
